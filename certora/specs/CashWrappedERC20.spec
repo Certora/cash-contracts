@@ -6,38 +6,10 @@ import "methods/IERC2612.spec";
 methods {
     function isWhitelistedMinter(address) external returns (bool) envfree;
     function isWhitelistedRecipient(address) external returns (bool) envfree;
+
+    // Getters:
+    function factory() external returns (address) envfree;
 }
-
-/*
-┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Ghost & hooks: sum of all balances                                                                                  │
-└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-*/
-ghost mathint sumOfBalances {
-    init_state axiom sumOfBalances == 0;
-}
-
-// Because `balance` has a uint256 type, any balance addition in CVL1 behaved as a `require_uint256()` casting,
-// leaving out the possibility of overflow. This is not the case in CVL2 where casting became more explicit.
-// A counterexample in CVL2 is having an initial state where Alice initial balance is larger than totalSupply, which 
-// overflows Alice's balance when receiving a transfer. This is not possible unless the contract is deployed into an 
-// already used address (or upgraded from corrupted state).
-// We restrict such behavior by making sure no balance is greater than the sum of balances.
-// hook Sload uint256 balance _balances[KEY address addr] {
-//     require sumOfBalances >= to_mathint(balance);
-// }
-
-// hook Sstore _balances[KEY address addr] uint256 newValue (uint256 oldValue) {
-//     sumOfBalances = sumOfBalances - oldValue + newValue;
-// }
-
-// /*
-// ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-// │ Invariant: totalSupply is the sum of all balances                                                                   │
-// └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
-// */
-// invariant totalSupplyIsSumOfBalances()
-//     to_mathint(totalSupply()) == sumOfBalances;
 
 /*
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
@@ -435,5 +407,75 @@ rule permit(env e) {
         // no other allowance or nonce is modified
         assert nonces(account1)              != otherNonceBefore     => account1 == holder;
         assert allowance(account2, account3) != otherAllowanceBefore => (account2 == holder && account3 == spender);
+    }
+}
+
+/*
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Rule: whitelistMinters behavior and side effects                                                                             │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+*/
+rule whitelistMinters(env e) {
+    require nonpayable(e);
+
+    address[] accounts;
+    bool[] whitelists;
+    // limit array size for simplicity
+    require accounts.length <= 2;
+    require whitelists.length <= 2;
+
+    address account;
+    require account != accounts[0] && account != accounts[1];
+
+    bool isWhitelistedBefore = isWhitelistedMinter(account);
+
+    // run transaction
+    whitelistMinters@withrevert(e, accounts, whitelists);
+
+    // check outcome
+    if (lastReverted) {
+        assert accounts.length != whitelists.length ||
+        e.msg.sender != factory();
+    } else {
+        // minters whitelist is updated
+        assert isWhitelistedBefore == isWhitelistedMinter(account);
+        assert (accounts.length == 2 && accounts[0] != accounts[1]) || (accounts.length == 1) => isWhitelistedMinter(accounts[0]) == whitelists[0];
+        assert accounts.length == 2 && accounts[0] == accounts[1] => isWhitelistedMinter(accounts[0]) == whitelists[1]; // the latest one is the actual update.
+        assert accounts.length == 2 => isWhitelistedMinter(accounts[1]) == whitelists[1];
+    }
+}
+
+/*
+┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Rule: whitelistRecipients behavior and side effects                                                                             │
+└─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+*/
+rule whitelistRecipients(env e) {
+    require nonpayable(e);
+
+    address[] accounts;
+    bool[] whitelists;
+    // limit array size for simplicity
+    require accounts.length <= 2;
+    require whitelists.length <= 2;
+
+    address account;
+    require account != accounts[0] && account != accounts[1];
+
+    bool isWhitelistedBefore = isWhitelistedRecipient(account);
+
+    // run transaction
+    whitelistRecipients@withrevert(e, accounts, whitelists);
+
+    // check outcome
+    if (lastReverted) {
+        assert accounts.length != whitelists.length ||
+        e.msg.sender != factory();
+    } else {
+        // recipients whitelist is updated
+        assert isWhitelistedBefore == isWhitelistedRecipient(account);
+        assert (accounts.length == 2 && accounts[0] != accounts[1]) || (accounts.length == 1) => isWhitelistedRecipient(accounts[0]) == whitelists[0];
+        assert accounts.length == 2 && accounts[0] == accounts[1] => isWhitelistedRecipient(accounts[0]) == whitelists[1]; // the latest one is the actual update.
+        assert accounts.length == 2 => isWhitelistedRecipient(accounts[1]) == whitelists[1];
     }
 }
