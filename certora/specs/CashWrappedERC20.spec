@@ -99,8 +99,6 @@ rule onlyWhitelistedRecipientCanIncreaseTheirBalance(env e) {
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 rule onlyHolderOfSpenderCanChangeAllowance(env e) {
-    // requireInvariant totalSupplyIsSumOfBalances();
-
     method f;
     calldataarg args;
     address holder;
@@ -244,7 +242,6 @@ rule withdraw(env e) {
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 rule transfer(env e) {
-    // requireInvariant totalSupplyIsSumOfBalances();
     require nonpayable(e);
 
     address holder = e.msg.sender;
@@ -285,7 +282,6 @@ rule transfer(env e) {
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 rule transferFrom(env e) {
-    // requireInvariant totalSupplyIsSumOfBalances();
     require nonpayable(e);
 
     address spender = e.msg.sender;
