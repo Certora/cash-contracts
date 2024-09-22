@@ -21,7 +21,7 @@ invariant zeroAddressNoBalance()
 
 /*
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Rules: only mint and withdraw can change total supply                                                                   │
+│ Rules: only mint and withdraw can change total supply                                                               │
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 rule noChangeTotalSupply(env e) {
@@ -76,7 +76,7 @@ rule onlyWhitelistedCanMint(env e) {
 
 /*
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Rules: only white listed recipients can have their balance increased                                               │
+│ Rules: only white listed recipients can have their balance increased                                                │
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 rule onlyWhitelistedRecipientCanIncreaseTheirBalance(env e) {
@@ -187,7 +187,7 @@ rule mint(env e) {
 
 /*
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Rules: withdraw behavior and side effects                                                                               │
+│ Rules: withdraw behavior and side effects                                                                           │
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 rule withdraw(env e) {
@@ -412,7 +412,7 @@ rule permit(env e) {
 
 /*
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Rule: whitelistMinters behavior and side effects                                                                             │
+│ Rule: whitelistMinters behavior and side effects                                                                    │
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 rule whitelistMinters(env e) {
@@ -447,7 +447,7 @@ rule whitelistMinters(env e) {
 
 /*
 ┌─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
-│ Rule: whitelistRecipients behavior and side effects                                                                             │
+│ Rule: whitelistRecipients behavior and side effects                                                                 │
 └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 */
 rule whitelistRecipients(env e) {
